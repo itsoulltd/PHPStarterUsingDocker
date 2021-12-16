@@ -1,0 +1,64 @@
+version: '3.5'
+
+networks:
+  web-app-net:
+    name: my-web-app-net
+    driver: bridge
+
+volumes:
+  mysql-db-storage:
+
+services:
+  mysql-db:
+    image: mariadb:10.5
+    environment:
+      MYSQL_DATABASE: testDB
+      MYSQL_ROOT_PASSWORD: root@123
+    ports:
+      - 3306:3306
+    networks:
+      - web-app-net
+    volumes:
+      - mysql-db-storage:/var/lib/mysql
+      # Note: Place the db_dump.sql in the mysql-dump dir, 
+      # which should be in the same dir as the docker-compose.yaml file.
+      - ./mysql-dump:/docker-entrypoint-initdb.d
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - 'mysql-db:db'
+    ports:
+      - 8081:80
+    networks:
+      - web-app-net
+    depends_on:
+      - mysq-db
+    restart: on-failure
+
+  php-httpd:
+    image: php_app_starter:1.0
+    build:
+       context: .
+       dockerfile: Dockerfile
+    ports:
+      - 80:80
+    networks:
+      - web-app-net
+    depends_on:
+      - mysql-db
+    restart: on-failure
+
+#  php-httpd-v2:
+#    image: php:7.2-apache
+#    ports:
+#      - 80:80
+#    networks:
+#      - web-app-net
+#    depends_on:
+#      - mysql-db
+#    volumes:
+#      - ./src:/var/www/html
+#    restart: on-failure
+
+#end of scripts
