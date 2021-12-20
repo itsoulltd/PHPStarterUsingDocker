@@ -26,8 +26,13 @@ services:
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
-    links:
-      - 'mysql-db:db'
+#    links:
+#      - 'mysql-db:db'
+    environment:
+      PMA_HOST: mysql-db
+      PMA_PORT: 3306
+      PMA_PMADB: testDB
+      MYSQL_ROOT_PASSWORD: root@123
     ports:
       - 8081:80
     networks:
